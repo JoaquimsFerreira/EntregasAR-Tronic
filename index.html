@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Entregas</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f8f9fa;
+            padding: 15px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1, h2 {
+            color: #2d3436;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .login {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 380px;
+            margin: 60px auto;
+        }
+
+        .oculto {
+            display: none;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        button {
+            background: #27ae60;
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #219653;
+        }
+
+        .erro {
+            color: red;
+            text-align: center;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .form {
+            background: white;
+            padding: 18px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .btn-sair {
+            width: auto;
+            float: right;
+            background: #e74c3c;
+            margin-bottom: 10px;
+        }
+
+        .btn-sair:hover {
+            background: #c0392b;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #2c3e50;
+            color: white;
+        }
+
+        .total {
+            font-size: 20px;
+            font-weight: bold;
+            color: #27ae60;
+            text-align: right;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            margin-top: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div class="login" id="telaLogin">
+    <h2>Acesso ao Controle</h2>
+    <input type="password" id="senha" placeholder="Digite a senha">
+    <button onclick="entrar()">Acessar</button>
+    <div class="erro" id="msgErro">Senha incorreta!</div>
+</div>
+
+<div id="sistema" class="oculto">
+    <button class="btn-sair" onclick="sair()">Sair</button>
+    <h1>🚚 Meus Corre</h1>
+
+    <div class="form">
+        <h2>Cadastrar Novo Corre</h2>
+        <input type="date" id="data" required>
+        <input type="text" id="local" placeholder="Local da entrega ou Retirada" required>
+        <input type="text" id="descricao" placeholder="Peça / Serviço feito" required>
+        <input type="number" id="valor" placeholder="Valor do corre R$" step="0.01" required>
+        <button onclick="adicionarEntrega()">Salvar Corre</button>
+    </div>
+
+    <h2>Lista das Correrias</h2>
+    <table>
+        <tr>
+            <th>Data</th>
+            <th>Local / Nome</th>
+            <th>Serviço / Peça</th>
+            <th>Valor R$</th>
+        </tr>
+        <tbody id="lista"></tbody>
+    </table>
+
+    <div class="total">Total a receber: R$ <span id="somaTotal">0,00</span></div>
+</div>
+
+<script>
+// 👇 COLOQUE AQUI OS DADOS DO SEU FIREBASE
+const firebaseConfig = {
+  apiKey: "AIzaSyB7ZDk7iGS_JgHIaShNtblePwBTIfTq0ws",
+  authDomain: "contoleentregas.firebaseapp.com",
+  databaseURL: "https://contoleentregas-default-rtdb.firebaseio.com/",
+  projectId: "contoleentregas",
+  storageBucket: "contoleentregas.appspot.com",
+  messagingSenderId: "321723616016",
+  appId: "1:321723616016:web:33d47e8e6e718770d83395"
+};
+
+firebase.initializeApp(firebaseConfig);
+const banco = firebase.database().ref('entregas');
+
+// 🛡️ ALTERE A SENHA AQUI
+const SENHA = "entrega123";
+
+function entrar(){
+    if(document.getElementById('senha').value === SENHA){
+        document.getElementById('telaLogin').classList.add('oculto');
+        document.getElementById('sistema').classList.remove('oculto');
+        carregarLista();
+    }else{
+        document.getElementById('msgErro').style.display = 'block';
+    }
+}
+
+function sair(){
+    document.getElementById('sistema').classList.add('oculto');
+    document.getElementById('telaLogin').classList.remove('oculto');
+    document.getElementById('senha').value = '';
+}
+
+function adicionarEntrega(){
+    const entrega = {
+        data: document.getElementById('data').value,
+        local: document.getElementById('local').value,
+        descricao: document.getElementById('descricao').value,
+        valor: parseFloat(document.getElementById('valor').value)
+    };
+
+    banco.push(entrega).then(()=>{
+        alert('Entrega salva! ✅');
+        document.getElementById('local').value = '';
+        document.getElementById('descricao').value = '';
+        document.getElementById('valor').value = '';
+    });
+}
+
+function carregarLista(){
+    banco.on('value', dados => {
+        const itens = dados.val();
+        const corpo = document.getElementById('lista');
+        let total = 0;
+        corpo.innerHTML = '';
+
+        if(itens){
+            Object.values(itens).forEach(entrega => {
+                total += entrega.valor;
+                corpo.innerHTML += `
+                <tr>
+                    <td>${entrega.data}</td>
+                    <td>${entrega.local}</td>
+                    <td>${entrega.descricao}</td>
+                    <td>R$ ${entrega.valor.toFixed(2)}</td>
+                </tr>`;
+            });
+        }
+        document.getElementById('somaTotal').textContent = total.toFixed(2);
+    });
+}
+</script>
+
+</body>
+</html>
