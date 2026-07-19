@@ -42,7 +42,7 @@
 
 <!-- 🛡️ Tela de Login -->
 <div id="telaLogin">
-    <h2>Acesso ao Controle</h2>
+    <h2>Acesso ao sistema de Entregas/Retirada AR Tronic</h2>
     <input type="password" id="senha" placeholder="Digite a senha">
     <button onclick="entrar()">Acessar</button>
     <div id="msgErro">Senha incorreta!</div>
@@ -58,8 +58,8 @@
         <thead>
             <tr>
                 <th>Data</th>
-                <th>Local / Nome</th>
-                <th>Serviço / Peça</th>
+                <th>Entrega / Retirada</th>
+                <th>Descrição da correria</th>
                 <th>Valor R$</th>
                 <th>Ações</th>
             </tr>
@@ -69,7 +69,7 @@
         </tbody>
     </table>
 
-    <p style="margin-top:15px; font-weight:bold;">Total a receber: R$ <span id="total">0,00</span></p>
+    <p style="margin-top:15px; font-weight:bold;">No fim do dia tu me deve : R$ <span id="total">0,00</span></p>
 
     <!-- Formulário de Cadastro / Edição -->
     <div id="formCadastro" style="margin-top:20px; display:none; border:1px solid #ccc; padding:15px;">
