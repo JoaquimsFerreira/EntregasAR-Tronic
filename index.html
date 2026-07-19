@@ -3,184 +3,249 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meus Corre</title>
+    <title>Meus Corres - AR-Tronic</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 950px; margin: 2rem auto; padding: 0 1rem; }
-        h1 { color: #2c3e50; }
-        .menu { margin: 1.5rem 0; }
-        .menu a { margin-right: 1rem; padding: 0.5rem 1rem; background: #3498db; color: white; border-radius: 4px; text-decoration: none; }
-        table { width: 100%; border-collapse: collapse; margin-top: 2rem; }
-        th, td { padding: 0.8rem; text-align: left; border-bottom: 1px solid #ddd; vertical-align: middle; }
-        th { background: #f8f9fa; }
-        .total { font-size: 1.2rem; font-weight: bold; margin-top: 1.5rem; color: #27ae60; }
-        .btn-excluir { background: #e74c3c; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; }
-        .btn-excluir:hover { background: #c0392b; }
-        .miniatura { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc; }
-        .sem-foto { width: 60px; height: 60px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #666; text-align: center; }
-        #previewFoto { margin-top: 0.5rem; max-width: 120px; max-height: 120px; border: 1px solid #ddd; }
+        /* 🛡️ Estilo da tela de login */
+        #telaLogin {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 9999;
+            font-family: Arial, sans-serif;
+        }
+        #telaLogin h2 { margin-bottom: 15px; color: #222; }
+        #telaLogin input {
+            padding: 8px 10px; width: 220px; margin-bottom: 12px;
+            border: 1px solid #ccc; border-radius: 3px; font-size: 15px;
+        }
+        #telaLogin button {
+            padding: 7px 18px; background: #333; color: #fff;
+            border: none; border-radius: 3px; cursor: pointer;
+        }
+        #msgErro { margin-top: 10px; color: #c00; display: none; }
+
+        /* 📋 Sistema principal */
+        #sistema {
+            display: none; padding: 15px; font-family: Arial, sans-serif;
+        }
+        .acao-btn {
+            padding: 4px 8px; margin: 0 4px; border: none; border-radius: 3px;
+            cursor: pointer; font-size: 13px;
+        }
+        .editar { background-color: #2196F3; color: white; }
+        .excluir { background-color: #f44336; color: white; }
     </style>
 </head>
 <body>
 
-    <h1>🚚 Meus Corre</h1>
+<!-- 🛡️ Tela de Login -->
+<div id="telaLogin">
+    <h2>Acesso ao Controle</h2>
+    <input type="password" id="senha" placeholder="Digite a senha">
+    <button onclick="entrar()">Acessar</button>
+    <div id="msgErro">Senha incorreta!</div>
+</div>
 
-    <div class="menu">
-        <a href="#" onclick="mostrarFormulario()">Cadastrar Novo Corre</a>
-        <a href="#" onclick="mostrarLista()">Lista das Correrias</a>
+<!-- 📋 Sistema Principal -->
+<div id="sistema">
+    <h1>🚚 Meus Corres</h1>
+    <p><a href="#" onclick="mostrarForm()">Cadastrar Novo Corre</a></p>
+    <p><a href="#" onclick="carregarLista()">Lista das Correrias</a></p>
+
+    <table border="1" cellpadding="6" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Local / Nome</th>
+                <th>Serviço / Peça</th>
+                <th>Valor R$</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="corpoTabela">
+            <tr><td colspan="5" align="center">Nenhuma entrega cadastrada</td></tr>
+        </tbody>
+    </table>
+
+    <p style="margin-top:15px; font-weight:bold;">Total a receber: R$ <span id="total">0,00</span></p>
+
+    <!-- Formulário de Cadastro / Edição -->
+    <div id="formCadastro" style="margin-top:20px; display:none; border:1px solid #ccc; padding:15px;">
+        <h3 id="tituloForm">Cadastrar Novo Corre</h3>
+        <input type="hidden" id="idRegistro">
+        <label>Data:</label><br>
+        <input type="date" id="data"><br><br>
+        <label>Local / Nome:</label><br>
+        <input type="text" id="local"><br><br>
+        <label>Serviço / Peça:</label><br>
+        <input type="text" id="servico"><br><br>
+        <label>Valor R$:</label><br>
+        <input type="number" step="0.01" min="0" id="valor"><br><br>
+        <button onclick="salvar()">Salvar</button>
+        <button onclick="fecharForm()">Cancelar</button>
     </div>
 
-    <!-- Formulário de cadastro -->
-    <div id="formulario" style="display: none; margin-top: 2rem;">
-        <h3>Cadastrar Nova Correria</h3>
-        <div style="margin-bottom: 1rem;">
-            <label>Data: </label>
-            <input type="date" id="data">
-        </div>
-        <div style="margin-bottom: 1rem;">
-            <label>Local / Nome do Serviço: </label>
-            <input type="text" id="local" placeholder="Ex: Centro - Manutenção">
-        </div>
-        <div style="margin-bottom: 1rem;">
-            <label>Peça / Valor R$: </label>
-            <input type="number" step="0.01" id="valor" placeholder="0,00">
-        </div>
-        <!-- Campo para adicionar foto -->
-        <div style="margin-bottom: 1rem;">
-            <label>Foto do Item: </label><br>
-            <input type="file" id="foto" accept="image/*" onchange="mostrarPrevia()">
-            <br>
-            <img id="previewFoto" style="display: none;" alt="Prévia da foto">
-        </div>
-        <button onclick="cadastrar()">Salvar</button>
-    </div>
+    <br>
+    <button onclick="sair()">Sair</button>
+</div>
 
-    <!-- Lista de registros -->
-    <div id="lista" style="display: block;">
-        <h3>Lista das Correrias</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Foto</th>
-                    <th>Data</th>
-                    <th>Local / Serviço</th>
-                    <th>Valor R$</th>
-                    <th>Ação</th>
-                </tr>
-            </thead>
-            <tbody id="tabelaCorridas"></tbody>
-        </table>
-        <div class="total">Total a receber: R$ <span id="valorTotal">0,00</span></div>
-    </div>
+<!-- 🔌 Bibliotecas Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
-    <script>
-        let corridas = JSON.parse(localStorage.getItem("corridas")) || [];
-        mostrarLista();
+<script>
+// 🔑 Configuração do Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyB7ZDk7iGS_JgHIaShNtblePwBTIfTq0ws",
+  authDomain: "contoleentregas.firebaseapp.com",
+  databaseURL: "https://contoleentregas-default-rtdb.firebaseio.com/",
+  projectId: "contoleentregas",
+  storageBucket: "contoleentregas.appspot.com",
+  messagingSenderId: "321723616016",
+  appId: "1:321723616016:web:33d47e8e6e718770d83395"
+};
 
-        function mostrarFormulario() {
-            document.getElementById("formulario").style.display = "block";
-            document.getElementById("lista").style.display = "none";
-            limparFormulario();
-        }
+firebase.initializeApp(firebaseConfig);
+const banco = firebase.database().ref('entregas');
+const SENHA = "entrega123";
 
-        function mostrarLista() {
-            document.getElementById("formulario").style.display = "none";
-            document.getElementById("lista").style.display = "block";
-            atualizarTabela();
-        }
+// 🛡️ Funções de Login
+function entrar() {
+    const senha = document.getElementById("senha").value.trim();
+    if (senha === SENHA) {
+        document.getElementById("telaLogin").style.display = "none";
+        document.getElementById("sistema").style.display = "block";
+        localStorage.setItem("logado", "sim");
+        carregarLista();
+    } else {
+        document.getElementById("msgErro").style.display = "block";
+    }
+}
 
-        // Mostra prévia da foto escolhida
-        function mostrarPrevia() {
-            const input = document.getElementById("foto");
-            const preview = document.getElementById("previewFoto");
-            if (input.files && input.files[0]) {
-                const leitor = new FileReader();
-                leitor.onload = e => {
-                    preview.src = e.target.result;
-                    preview.style.display = "block";
-                };
-                leitor.readAsDataURL(input.files[0]);
-            }
-        }
+function sair() {
+    localStorage.removeItem("logado");
+    document.getElementById("sistema").style.display = "none";
+    document.getElementById("telaLogin").style.display = "flex";
+    document.getElementById("senha").value = "";
+}
 
-        function cadastrar() {
-            const data = document.getElementById("data").value;
-            const local = document.getElementById("local").value.trim();
-            const valor = parseFloat(document.getElementById("valor").value);
-            const fotoInput = document.getElementById("foto");
-            let fotoBase64 = "";
+// 📋 Funções do Sistema
+function mostrarForm() {
+    document.getElementById("tituloForm").textContent = "Cadastrar Novo Corre";
+    document.getElementById("idRegistro").value = "";
+    document.getElementById("data").value = "";
+    document.getElementById("local").value = "";
+    document.getElementById("servico").value = "";
+    document.getElementById("valor").value = "";
+    document.getElementById("formCadastro").style.display = "block";
+}
 
-            if (!data || !local || isNaN(valor) || valor <= 0) {
-                alert("Preencha todos os campos obrigatórios!");
-                return;
-            }
+function fecharForm() {
+    document.getElementById("formCadastro").style.display = "none";
+}
 
-            // Se tiver foto, converte para texto Base64 para salvar
-            if (fotoInput.files && fotoInput.files[0]) {
-                const leitor = new FileReader();
-                leitor.onload = function () {
-                    fotoBase64 = leitor.result;
-                    salvarRegistro(data, local, valor, fotoBase64);
-                };
-                leitor.readAsDataURL(fotoInput.files[0]);
-            } else {
-                salvarRegistro(data, local, valor, fotoBase64);
-            }
-        }
+function salvar() {
+    const id = document.getElementById("idRegistro").value;
+    const dados = {
+        data: document.getElementById("data").value,
+        local: document.getElementById("local").value,
+        servico: document.getElementById("servico").value,
+        valor: Number(document.getElementById("valor").value)
+    };
 
-        function salvarRegistro(data, local, valor, foto) {
-            corridas.push({ data, local, valor, foto });
-            salvarDados();
-            atualizarTabela();
-            limparFormulario();
-            alert("Registro salvo com sucesso!");
-        }
+    if (!dados.data || !dados.local || !dados.servico || isNaN(dados.valor)) {
+        alert("Preencha todos os campos corretamente!");
+        return;
+    }
 
-        function excluirRegistro(indice) {
-            if (confirm("Tem certeza que deseja excluir?")) {
-                corridas.splice(indice, 1);
-                salvarDados();
-                atualizarTabela();
-            }
-        }
+    if (id) {
+        // Atualizar registro existente
+        banco.child(id).update(dados)
+            .then(() => {
+                alert("Registro atualizado!");
+                fecharForm();
+                carregarLista();
+            })
+            .catch(err => alert("Erro: " + err));
+    } else {
+        // Criar novo registro
+        banco.push(dados)
+            .then(() => {
+                alert("Cadastrado com sucesso!");
+                fecharForm();
+                carregarLista();
+            })
+            .catch(err => alert("Erro: " + err));
+    }
+}
 
-        function atualizarTabela() {
-            const corpo = document.getElementById("tabelaCorridas");
+function carregarLista() {
+    banco.once("value")
+        .then(snapshot => {
+            const corpo = document.getElementById("corpoTabela");
             corpo.innerHTML = "";
             let total = 0;
 
-            corridas.forEach((item, i) => {
-                total += item.valor;
-                const linha = document.createElement("tr");
-                linha.innerHTML = `
-                    <td>
-                        ${item.foto
-                            ? `<img src="${item.foto}" class="miniatura" alt="Foto">`
-                            : `<div class="sem-foto">Sem foto</div>`
-                        }
-                    </td>
-                    <td>${item.data}</td>
-                    <td>${item.local}</td>
-                    <td>R$ ${item.valor.toFixed(2).replace(".", ",")}</td>
-                    <td><button class="btn-excluir" onclick="excluirRegistro(${i})">Excluir</button></td>
+            if (!snapshot.exists()) {
+                corpo.innerHTML = `<tr><td colspan="5" align="center">Nenhuma entrega cadastrada</td></tr>`;
+                document.getElementById("total").textContent = "0,00";
+                return;
+            }
+
+            snapshot.forEach(item => {
+                const id = item.key;
+                const d = item.val();
+                total += d.valor;
+
+                corpo.innerHTML += `
+                    <tr>
+                        <td>${d.data || ""}</td>
+                        <td>${d.local || ""}</td>
+                        <td>${d.servico || ""}</td>
+                        <td>R$ ${d.valor.toFixed(2).replace(".", ",")}</td>
+                        <td>
+                            <button class="acao-btn editar" onclick="editar('${id}', '${d.data}', '${d.local}', '${d.servico}', ${d.valor})">Editar</button>
+                            <button class="acao-btn excluir" onclick="excluir('${id}')">Excluir</button>
+                        </td>
+                    </tr>
                 `;
-                corpo.appendChild(linha);
             });
 
-            document.getElementById("valorTotal").textContent = total.toFixed(2).replace(".", ",");
-        }
+            document.getElementById("total").textContent = total.toFixed(2).replace(".", ",");
+        });
+}
 
-        function salvarDados() {
-            localStorage.setItem("corridas", JSON.stringify(corridas));
-        }
+function editar(id, data, local, servico, valor) {
+    document.getElementById("tituloForm").textContent = "Editar Corre";
+    document.getElementById("idRegistro").value = id;
+    document.getElementById("data").value = data;
+    document.getElementById("local").value = local;
+    document.getElementById("servico").value = servico;
+    document.getElementById("valor").value = valor;
+    document.getElementById("formCadastro").style.display = "block";
+}
 
-        function limparFormulario() {
-            document.getElementById("data").value = "";
-            document.getElementById("local").value = "";
-            document.getElementById("valor").value = "";
-            document.getElementById("foto").value = "";
-            document.getElementById("previewFoto").style.display = "none";
-        }
-    </script>
+function excluir(id) {
+    if (confirm("Tem certeza que deseja excluir este registro?")) {
+        banco.child(id).remove()
+            .then(() => carregarLista())
+            .catch(err => alert("Erro ao excluir: " + err));
+    }
+}
+
+// ✅ Manter sessão logada
+if (localStorage.getItem("logado") === "sim") {
+    document.getElementById("telaLogin").style.display = "none";
+    document.getElementById("sistema").style.display = "block";
+    carregarLista();
+}
+
+document.getElementById("senha").addEventListener("keypress", e => {
+    if (e.key === "Enter") entrar();
+});
+</script>
 
 </body>
 </html>
