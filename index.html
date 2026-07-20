@@ -45,7 +45,7 @@
     <h2>Acesso ao sistema de Entregas/Retirada AR Tronic</h2>
     <input type="password" id="senha" placeholder="Digite a senha">
     <button onclick="entrar()">Acessar</button>
-    <div id="msgErro">Senha incorreta!</div>
+    <div id="msgErro">Senha Errada, Só eu tenho a Senha Certa.</div>
 </div>
 
 <!-- 📋 Sistema Principal -->
@@ -109,7 +109,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const banco = firebase.database().ref('entregas');
-const SENHA = "entrega123";
+const SENHA = "kimentrega";
 
 // 🛡️ Funções de Login
 function entrar() {
